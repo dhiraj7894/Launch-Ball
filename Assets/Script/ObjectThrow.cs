@@ -6,44 +6,60 @@ using UnityEngine.SceneManagement;
 
 public class ObjectThrow : MonoBehaviour
 {
+    public static ObjectThrow instance;
+    
 
     public GameObject player;
+    public GameObject slider;
     public Slider powerCheck;
+    public Rigidbody rb;
 
     int minForce=0;
     int launchForce;
-    public int maxForce = 70;
+    public int maxForce;
     public float time;
+    public float time2 = 10;
 
+
+   
+    public bool isGoalReached = false;
+    public bool bIsOnTheMove = false;
     bool isGrounded = false;
+    
 
     private void Start()
     {
+        rb = GetComponent<Rigidbody>();
+        instance = this;
+        powerCheck.maxValue = maxForce;
+        slider.SetActive(true);
         launchForce = minForce;
         StartCoroutine(timeUpdate());
+        
     }
-    // Update is called once per frame
     void Update()
     {
-        if(transform.position.y <= -5)
+        
+        if (transform.position.y <= -5 || transform.position.y >= 45 || time2 <= 0)
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
         powerCheck.value=launchForce;
-        if (launchForce >= 70)
+        if (launchForce >= maxForce)
         {
             launchForce = minForce;
         }
-
-        if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
+    }
+    public void launch()
+    {
+        bIsOnTheMove = true;
+        slider.SetActive(false);
+        if (isGrounded)
         {
-            if (isGrounded)
-            {
-                addForce();
-            }
-           
-        } 
+            addForce();
+        }
+        StartCoroutine(Decresetime());
     }
     private void OnCollisionEnter(Collision other)
     {
@@ -55,6 +71,22 @@ public class ObjectThrow : MonoBehaviour
         {
             isGrounded = false;
         }
+        if (other.gameObject.CompareTag("Goal"))
+        {
+            EffectParty.instance.effect(1f);
+            StartCoroutine(ShowGameOverPanal());
+            StopCoroutine(Decresetime());
+        }
+        if (other.gameObject.CompareTag("Glad"))
+        {
+            EffectParty.instance.SprayEffect(2f);
+        }
+    }
+    public void setForce(int force)
+    {
+        time -= 0.01f;
+        maxForce += force;
+        powerCheck.maxValue = maxForce;
     }
     void addForce()
     {
@@ -71,4 +103,19 @@ public class ObjectThrow : MonoBehaviour
         
         
     }
+    IEnumerator ShowGameOverPanal()
+    {
+        yield return new WaitForSeconds(1f);
+        GameManager.gameManager.gameOver();
+    }
+    IEnumerator Decresetime()
+    {
+        while (time < 10)
+        {
+            time2 -= 0.1f;
+            yield return new WaitForSeconds(.5f);
+        }
+        
+    }
+
 }
