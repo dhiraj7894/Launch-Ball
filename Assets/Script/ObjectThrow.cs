@@ -18,7 +18,7 @@ public class ObjectThrow : MonoBehaviour
     int launchForce;
     public int maxForce;
     public float time;
-    public float time2 = 10;
+    /*public float time2 = 10;*/
 
 
    
@@ -40,7 +40,7 @@ public class ObjectThrow : MonoBehaviour
     void Update()
     {
         
-        if (transform.position.y <= -5 || transform.position.y >= 45 || time2 <= 0)
+        if (transform.position.y <= -5 || transform.position.y >= 85)
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
@@ -59,10 +59,12 @@ public class ObjectThrow : MonoBehaviour
         {
             addForce();
         }
-        StartCoroutine(Decresetime());
+        /*StartCoroutine(Decresetime());*/
     }
     private void OnCollisionEnter(Collision other)
     {
+        SoundManager.instancce.BallCollide();
+
         if (other.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;
@@ -75,7 +77,6 @@ public class ObjectThrow : MonoBehaviour
         {
             EffectParty.instance.effect(1f);
             StartCoroutine(ShowGameOverPanal());
-            StopCoroutine(Decresetime());
         }
         if (other.gameObject.CompareTag("Glad"))
         {
@@ -86,12 +87,13 @@ public class ObjectThrow : MonoBehaviour
     {
         time -= 0.01f;
         maxForce += force;
-        powerCheck.maxValue = maxForce;
+        
+       powerCheck.maxValue = maxForce;
     }
     void addForce()
-    {
-            Rigidbody rb = player.GetComponent<Rigidbody>();
-            rb.AddForce(transform.forward * launchForce, ForceMode.VelocityChange);    
+    { 
+        Rigidbody rb = player.GetComponent<Rigidbody>();
+        rb.AddForce(transform.forward * launchForce, ForceMode.VelocityChange);
     }
     IEnumerator timeUpdate()
     {
@@ -100,22 +102,12 @@ public class ObjectThrow : MonoBehaviour
             launchForce += 5;
             yield return new WaitForSeconds(time);
         }
-        
-        
     }
+
     IEnumerator ShowGameOverPanal()
     {
         yield return new WaitForSeconds(1f);
         GameManager.gameManager.gameOver();
-    }
-    IEnumerator Decresetime()
-    {
-        while (time < 10)
-        {
-            time2 -= 0.1f;
-            yield return new WaitForSeconds(.5f);
-        }
-        
     }
 
 }
